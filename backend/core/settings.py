@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'apps.search',
     'apps.users',
     'apps.utils',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
