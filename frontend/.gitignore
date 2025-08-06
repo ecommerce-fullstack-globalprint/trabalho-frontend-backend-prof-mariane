@@ -1,0 +1,44 @@
+# Dependências
+node_modules/
+
+# Build
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+
+# Arquivos de lock
+package-lock.json
+yarn.lock
+
+# Ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Outros
+*.swp
+*.swo
+
+# Imagens geradas
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# Arquivos temporários
+*.tmp
+*.temp
