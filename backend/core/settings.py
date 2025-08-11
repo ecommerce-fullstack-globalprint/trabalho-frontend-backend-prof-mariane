@@ -37,8 +37,33 @@ INSTALLED_APPS = [
     'apps.search',
     'apps.users',
     'apps.utils',
+    'apps.api_v1',
     'rest_framework',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'GLOBAL PRINT',
+    'DESCRIPTION': 'API documentation for the GLOBAL PRINT project',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    "SWAGGER_UI_SETTINGS": {
+        "displayOperationId": True,
+        "persistAuthorization": True,
+        "filter": True,
+    },
+    'REDOC_DIST': 'SIDECAR',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
