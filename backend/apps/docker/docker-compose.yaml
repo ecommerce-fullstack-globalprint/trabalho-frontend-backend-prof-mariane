@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: "print_db"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-$$1x(z@@u(ghm3-#izxc_8v3ja+k@)+ok#1h+er@d8pb)0i*w
+      - POSTGRES_DB=print_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - ALLOWED_HOSTS=127.0.0.1,localhost
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
