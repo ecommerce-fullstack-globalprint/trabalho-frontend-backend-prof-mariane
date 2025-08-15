@@ -6,4 +6,4 @@ ENV/
 
 # Arquivos de variáveis de ambiente
 .env
-.env.*
+.env.***/__pycache__/\n*.pyc\n*.pyo\n*.pyd\n.Python\nenv/\nvenv/\n.venv/\nENV/\nenv.bak/\nvenv.bak/

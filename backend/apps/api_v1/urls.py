@@ -6,11 +6,13 @@ from drf_spectacular.views import (
 )
 from rest_framework.routers import DefaultRouter
 from apps.users import views as users_views
+from apps.custom_orders import views as custom_orders_views
 
 
 router = DefaultRouter()
 
 router.register(r'usuarios', users_views.UsuarioView, basename='usuario')
+router.register(r'custom-orders', custom_orders_views.CustomOrderViewSet, basename='custom-order')
 
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
