@@ -1,5 +1,5 @@
 from django.db import transaction
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import PermissionDenied
 from .models import Review
 
 
