@@ -3,7 +3,7 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(
-    r'usuarios',
-    views.UsuarioView,
-    basename='usuario'
+    r'reviews',
+    views.ReviewView,
+    basename='review'
 )
