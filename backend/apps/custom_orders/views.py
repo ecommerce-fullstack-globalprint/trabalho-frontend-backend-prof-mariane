@@ -1,15 +1,19 @@
 from rest_framework import viewsets
-from . import models, serializers
+from rest_framework.permissions import IsAuthenticated
+from .models import CustomOrder
+from .serializers import CustomOrderSerializer
 
 
 class CustomOrderViewSet(viewsets.ModelViewSet):
-    """ViewSet para gerenciar pedidos customizados"""
-    queryset = models.CustomOrder.objects.all()
-    serializer_class = serializers.CustomOrderSerializer
+    """
+    ViewSet para gerenciar pedidos customizados.
+    """
+    queryset = CustomOrder.objects.all()
+    serializer_class = CustomOrderSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        """Filtra pedidos por usuário se não for admin"""
-        queryset = super().get_queryset()
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(user=self.request.user)
-        return queryset
+        """
+        Retorna apenas os pedidos do usuário autenticado.
+        """
+        return CustomOrder.objects.filter(user=self.request.user)
