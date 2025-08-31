@@ -51,5 +51,6 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc"
     ),
+    path('payments/', include('apps.payments.urls')),  # Incluir URLs específicas do payments
     path('', include(router.urls)),
 ]
