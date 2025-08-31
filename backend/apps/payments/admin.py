@@ -6,6 +6,7 @@ from .models import Payment
 class PaymentAdmin(admin.ModelAdmin):
     list_display = [
         'id', 
+        'user',
         'order', 
         'method', 
         'status', 
@@ -13,14 +14,14 @@ class PaymentAdmin(admin.ModelAdmin):
         'transaction_id', 
         'created_at'
     ]
-    list_filter = ['method', 'status', 'created_at']
-    search_fields = ['transaction_id', 'order__id', 'order__user__username']
+    list_filter = ['method', 'status', 'created_at', 'user']
+    search_fields = ['transaction_id', 'order__id', 'user__email', 'user__nome']
     readonly_fields = ['created_at']
     ordering = ['-created_at']
     
     fieldsets = (
         ('Informações do Pagamento', {
-            'fields': ('order', 'method', 'status', 'amount', 'transaction_id')
+            'fields': ('user', 'order', 'method', 'status', 'amount', 'transaction_id')
         }),
         ('Timestamps', {
             'fields': ('created_at',),
