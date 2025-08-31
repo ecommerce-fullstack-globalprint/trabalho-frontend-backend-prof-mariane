@@ -1,6 +1,8 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from apps.orders.models import Order
 
+User = get_user_model()
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
@@ -17,6 +19,13 @@ class Payment(models.Model):
     ]
     
     id = models.AutoField(primary_key=True, verbose_name="ID")
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='payments', 
+        verbose_name="Cliente",
+        default=1  # Valor padrão temporário para a migração
+    )
     order = models.ForeignKey(
         Order, 
         on_delete=models.CASCADE, 
@@ -70,4 +79,41 @@ class Payment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Pagamento {self.id} - Pedido #{self.order.id} - {self.get_status_display()}"
+        return f"Pagamento {self.id} - {self.user.nome} - Pedido #{self.order.id} - {self.get_status_display()}"
+    
+    def save(self, *args, **kwargs):
+        """
+        Sobrescreve o método save para aplicar validações de segurança.
+        """
+        # Se é uma atualização (pk existe)
+        if self.pk:
+            # Busca o objeto original no banco
+            original = Payment.objects.get(pk=self.pk)
+            
+            # Verifica se o pagamento já foi processado
+            processed_statuses = ['pago', 'recusado', 'cancelled', 'refunded']
+            
+            if original.status in processed_statuses:
+                # Campos críticos que não podem ser alterados
+                protected_fields = {
+                    'amount': 'valor',
+                    'transaction_id': 'ID da transação',
+                    'mercadopago_payment_id': 'ID do Mercado Pago',
+                    'mercadopago_preference_id': 'ID da preferência',
+                    'user': 'usuário',
+                    'order': 'pedido'
+                }
+                
+                # Verifica se algum campo protegido foi alterado
+                for field_name, field_display in protected_fields.items():
+                    original_value = getattr(original, field_name)
+                    current_value = getattr(self, field_name)
+                    
+                    if original_value != current_value:
+                        from django.core.exceptions import ValidationError
+                        raise ValidationError(
+                            f"Não é possível alterar o {field_display} de um pagamento "
+                            f"com status '{original.get_status_display()}'"
+                        )
+        
+        super().save(*args, **kwargs)
