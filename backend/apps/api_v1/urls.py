@@ -8,6 +8,7 @@ from rest_framework.routers import DefaultRouter
 from apps.users import views as users_views
 from apps.custom_orders import views as custom_orders_views
 from apps.reviews import views as reviews_views
+from apps.payments import views as payments_views
 
 
 router = DefaultRouter()
@@ -26,6 +27,11 @@ router.register(
     r'reviews',
     reviews_views.ReviewView,
     basename='review'
+)
+router.register(
+    r'payments',
+    payments_views.PaymentViewSet,
+    basename='payment'
 )
 
 urlpatterns = [
