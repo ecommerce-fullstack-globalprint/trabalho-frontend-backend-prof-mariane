@@ -3,7 +3,7 @@ Serviço para integração com Mercado Pago usando Checkout Pro.
 """
 import logging
 from decimal import Decimal
-from sysconfig import scheme
+import sysconfig
 from typing import Dict, Any, Optional
 from django.conf import settings
 from django.urls import reverse
