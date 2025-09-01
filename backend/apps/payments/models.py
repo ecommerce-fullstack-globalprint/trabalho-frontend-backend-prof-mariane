@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.orders.models import Order
+import uuid
 
 User = get_user_model()
 
@@ -17,6 +18,8 @@ class Payment(models.Model):
         ('cancelled', 'Cancelado'),
         ('refunded', 'Reembolsado'),
     ]
+
+    PROCESSED_STATUSES = ['pago', 'recusado', 'cancelled', 'refunded']
     
     id = models.AutoField(primary_key=True, verbose_name="ID")
     user = models.ForeignKey(
@@ -54,6 +57,8 @@ class Payment(models.Model):
         verbose_name="ID da Transação",
         help_text="ID da transação retornado pelo Mercado Pago"
     )
+    order = models.ForeignKey('orders.Order', on_delete=models.CASCADE)
+
     mercadopago_payment_id = models.CharField(
         max_length=255,
         blank=True,
@@ -73,27 +78,32 @@ class Payment(models.Model):
         verbose_name="Data do Registro"
     )
 
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Última Atualização")
+
     class Meta:
         verbose_name = "Pagamento"
         verbose_name_plural = "Pagamentos"
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Pagamento {self.id} - {self.user.nome} - Pedido #{self.order.id} - {self.get_status_display()}"
+        return f"Pagamento {self.id} - {str(self.user)} - Pedido #{self.order.id} - {self.get_status_display()}"
     
     def save(self, *args, **kwargs):
         """
         Sobrescreve o método save para aplicar validações de segurança.
         """
+
+        # Gerar transaction_id apenas se não existir
+        if not self.transaction_id:
+            self.transaction_id = f"{self.order.id}_{uuid.uuid4().hex[:8]}"
+        super().save(*args, **kwargs)
+
         # Se é uma atualização (pk existe)
         if self.pk:
             # Busca o objeto original no banco
             original = Payment.objects.get(pk=self.pk)
-            
-            # Verifica se o pagamento já foi processado
-            processed_statuses = ['pago', 'recusado', 'cancelled', 'refunded']
-            
-            if original.status in processed_statuses:
+
+            if original.status in self.PROCESSED_STATUSES:
                 # Campos críticos que não podem ser alterados
                 protected_fields = {
                     'amount': 'valor',

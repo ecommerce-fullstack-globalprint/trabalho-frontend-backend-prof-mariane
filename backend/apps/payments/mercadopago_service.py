@@ -3,9 +3,12 @@ Serviço para integração com Mercado Pago usando Checkout Pro.
 """
 import logging
 from decimal import Decimal
+import sysconfig
 from typing import Dict, Any, Optional
 from django.conf import settings
 from django.urls import reverse
+from pydantic.v1.schema import schema
+
 from .models import Payment
 
 # Configurar logging
@@ -23,16 +26,17 @@ class MercadoPagoService:
         self.public_key = getattr(settings, 'MERCADO_PAGO_PUBLIC_KEY', None)
         self.sandbox = getattr(settings, 'MERCADO_PAGO_SANDBOX', True)
         
-        if not self.access_token:
-            raise ValueError("MERCADO_PAGO_ACCESS_TOKEN não configurado nas settings")
-        if not self.public_key:
-            raise ValueError("MERCADO_PAGO_PUBLIC_KEY não configurado nas settings")
+        if not self.access_token or not self.public_key:
+            raise ValueError("Mercado Pago não configurado nas settings")
 
+        logger.info(f"Mercado Pago inicializado  em modo %s", "SANDBOX" if self.sandbox else "PRODUÇÃO")
 
-        if self.sandbox:
-            logger.info("Mercado Pago configurado em modo SANDBOX")
-        else:
-            logger.info("Mercado Pago configurado em modo PRODUÇÃO")
+        @property
+        def sdk(self):
+            if self._sdk is None:
+                import mercadopago
+                self._sdk = mercadopago.SDK(self.access_token)
+            return self._sdk
     
     def create_checkout_preference(self, payment: Payment, request=None) -> Dict[str, Any]:
         """
@@ -111,7 +115,7 @@ class MercadoPagoService:
                 return {
                     "success": True,
                     "preference_id": preference["id"],
-                    "checkout_url": preference["init_point"],
+                    "checkout_url": preference["init_point"], # URL real
                     "sandbox_checkout_url": preference["sandbox_init_point"] if self.sandbox else None,
                     "public_key": self.public_key
                 }
@@ -286,4 +290,6 @@ class MercadoPagoService:
             return f"{scheme}://{host}"
         
         # Para desenvolvimento local - usar ngrok ou URL pública para produção
-        return "http://localhost:8000"
+        #return "http://localhost:8000"
+        import os
+        return os.getenv("BASE_URL", "https://localhost:8000")
