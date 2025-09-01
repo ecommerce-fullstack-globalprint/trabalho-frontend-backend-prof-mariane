@@ -1,9 +1,9 @@
 from pathlib import Path
 from decouple import config, Csv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -158,7 +158,8 @@ AUTH_USER_MODEL = 'users.Usuario'
 # Mercado Pago Settings
 MERCADO_PAGO_ACCESS_TOKEN = config('MERCADO_PAGO_ACCESS_TOKEN')
 MERCADO_PAGO_PUBLIC_KEY = config('MERCADO_PAGO_PUBLIC_KEY')
-MERCADO_PAGO_SANDBOX = config('MERCADO_PAGO_SANDBOX', default=True, cast=bool)
+MERCADO_PAGO_SANDBOX = os.getenv("MERCADO_PAGO_SANDBOX", "True") == "True"
+BASE_URL = os.getenv("BASE_URL")
 
 # Redirecionamento após login (caso use sessão)
 #LOGIN_REDIRECT_URL = '/admin/'
