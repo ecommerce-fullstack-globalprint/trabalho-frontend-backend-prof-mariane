@@ -11,15 +11,6 @@ from .models import Payment
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-try:
-    import mercadopago
-    MERCADOPAGO_AVAILABLE = True
-except ImportError as e:
-    logger.error(f"Erro ao importar mercadopago SDK: {e}")
-    mercadopago = None
-    MERCADOPAGO_AVAILABLE = False
-
-
 class MercadoPagoService:
     """
     Serviço para gerenciar pagamentos com Mercado Pago usando Checkout Pro.
@@ -27,9 +18,7 @@ class MercadoPagoService:
     
     def __init__(self):
         """Inicializa o serviço com as credenciais do Mercado Pago."""
-        if not MERCADOPAGO_AVAILABLE:
-            raise ImportError("SDK do Mercado Pago não está instalado")
-            
+
         self.access_token = getattr(settings, 'MERCADO_PAGO_ACCESS_TOKEN', None)
         self.public_key = getattr(settings, 'MERCADO_PAGO_PUBLIC_KEY', None)
         self.sandbox = getattr(settings, 'MERCADO_PAGO_SANDBOX', True)
@@ -38,10 +27,8 @@ class MercadoPagoService:
             raise ValueError("MERCADO_PAGO_ACCESS_TOKEN não configurado nas settings")
         if not self.public_key:
             raise ValueError("MERCADO_PAGO_PUBLIC_KEY não configurado nas settings")
-        
-        # Inicializar SDK
-        self.sdk = mercadopago.SDK(self.access_token)
-        
+
+
         if self.sandbox:
             logger.info("Mercado Pago configurado em modo SANDBOX")
         else:
