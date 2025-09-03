@@ -14,7 +14,10 @@ export class PaymentService extends CrudBaseService<Payment> {
   }
 
   public async createPayment(paymentData: PaymentRequest): Promise<Payment> {
-    return this.create(paymentData);
+    // Não usa abstração devido a incompatibilidade de tipos:
+    // PaymentRequest.amount: number vs Payment.amount: string
+    const response = await this.api.post<Payment>(this.baseEndpoint, paymentData);
+    return response.data;
   }
 
   public async getPayment(id: number): Promise<Payment> {
