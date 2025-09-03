@@ -1,4 +1,4 @@
-import { BaseApiService } from './base-api.service';
+import { CrudBaseService } from './abstractions';
 import { 
   Order,
   CreateOrderRequest,
@@ -7,26 +7,24 @@ import {
   PaginatedResponse
 } from '../types';
 
-export class OrderService extends BaseApiService {
+export class OrderService extends CrudBaseService<Order> {
+  protected baseEndpoint = '/api/v1/orders/';
+
   // ===== PEDIDOS =====
   public async getOrders(): Promise<PaginatedResponse<Order>> {
-    const response = await this.api.get<PaginatedResponse<Order>>('/api/v1/orders/');
-    return response.data;
+    return this.getAll();
   }
 
   public async getOrder(id: number): Promise<Order> {
-    const response = await this.api.get<Order>(`/api/v1/orders/${id}/`);
-    return response.data;
+    return this.getById(id);
   }
 
   public async createOrder(orderData: CreateOrderRequest): Promise<Order> {
-    const response = await this.api.post<Order>('/api/v1/orders/', orderData);
-    return response.data;
+    return this.create(orderData);
   }
 
   public async cancelOrder(id: number): Promise<Order> {
-    const response = await this.api.patch<Order>(`/api/v1/orders/${id}/cancel/`);
-    return response.data;
+    return this.performAction<Order>(id, 'cancel', {}, 'PATCH');
   }
 
   // ===== PEDIDOS CUSTOMIZADOS =====
