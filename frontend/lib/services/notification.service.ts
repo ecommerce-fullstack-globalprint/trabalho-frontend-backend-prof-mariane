@@ -1,22 +1,22 @@
-import { BaseApiService } from './base-api.service';
+import { CrudBaseService } from './abstractions';
 import { 
   Notification,
   PaginatedResponse
 } from '../types';
 
-export class NotificationService extends BaseApiService {
+export class NotificationService extends CrudBaseService<Notification> {
+  protected baseEndpoint = '/api/v1/notifications/';
+
   // ===== NOTIFICAÇÕES =====
   public async getNotifications(): Promise<PaginatedResponse<Notification>> {
-    const response = await this.api.get<PaginatedResponse<Notification>>('/api/v1/notifications/');
-    return response.data;
+    return this.getAll();
   }
 
   public async markNotificationAsRead(id: number): Promise<Notification> {
-    const response = await this.api.patch<Notification>(`/api/v1/notifications/${id}/read/`);
-    return response.data;
+    return this.performAction<Notification>(id, 'read', {}, 'PATCH');
   }
 
   public async markAllNotificationsAsRead(): Promise<void> {
-    await this.api.patch('/api/v1/notifications/mark-all-read/');
+    await this.performCollectionAction('mark-all-read', {}, 'PATCH');
   }
 }
