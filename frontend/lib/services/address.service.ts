@@ -1,27 +1,27 @@
-import { BaseApiService } from './base-api.service';
+import { CrudBaseService } from './abstractions';
 import { 
   Address,
   CreateAddressRequest
 } from '../types';
 
-export class AddressService extends BaseApiService {
+export class AddressService extends CrudBaseService<Address> {
+  protected baseEndpoint = '/api/v1/addresses/';
+
   // ===== ENDEREÇOS =====
   public async getAddresses(): Promise<Address[]> {
-    const response = await this.api.get<Address[]>('/api/v1/addresses/');
+    const response = await this.api.get<Address[]>(this.baseEndpoint);
     return response.data;
   }
 
   public async createAddress(addressData: CreateAddressRequest): Promise<Address> {
-    const response = await this.api.post<Address>('/api/v1/addresses/', addressData);
-    return response.data;
+    return this.create(addressData);
   }
 
   public async updateAddress(id: number, addressData: Partial<CreateAddressRequest>): Promise<Address> {
-    const response = await this.api.patch<Address>(`/api/v1/addresses/${id}/`, addressData);
-    return response.data;
+    return this.update(id, addressData);
   }
 
   public async deleteAddress(id: number): Promise<void> {
-    await this.api.delete(`/api/v1/addresses/${id}/`);
+    return this.delete(id);
   }
 }
