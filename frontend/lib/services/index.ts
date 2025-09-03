@@ -10,6 +10,9 @@ import { DashboardService } from './dashboard.service';
 import { AddressService } from './address.service';
 import { FileUploadService } from './file-upload.service';
 
+// ===== EXPORTS DE ABSTRAÇÕES =====
+export { CrudBaseService, LocalStorageManager } from './abstractions';
+
 // ===== CLASSE PRINCIPAL QUE COMBINA TODOS OS SERVIÇOS =====
 export class ApiService {
   public auth: AuthService;
