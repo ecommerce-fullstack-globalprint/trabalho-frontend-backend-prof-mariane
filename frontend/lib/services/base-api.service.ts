@@ -5,6 +5,7 @@ import axios, {
   InternalAxiosRequestConfig
 } from 'axios';
 import { ApiError, TokenRefreshResponse } from '../types';
+import { LocalStorageManager } from './abstractions';
 
 export class BaseApiService {
   protected api: AxiosInstance;
@@ -101,32 +102,19 @@ export class BaseApiService {
 
   // ===== GERENCIAMENTO DE TOKENS =====
   protected getAccessToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('access_token');
-    }
-    return null;
+    return LocalStorageManager.getAccessToken();
   }
 
   protected getRefreshToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('refresh_token');
-    }
-    return null;
+    return LocalStorageManager.getRefreshToken();
   }
 
   protected setTokens(accessToken: string, refreshToken: string): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', accessToken);
-      localStorage.setItem('refresh_token', refreshToken);
-    }
+    LocalStorageManager.setTokens(accessToken, refreshToken);
   }
 
   protected clearTokens(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user_data');
-    }
+    LocalStorageManager.clearTokens();
   }
 
   private async refreshAccessToken(): Promise<string | null> {
@@ -157,9 +145,7 @@ export class BaseApiService {
 
       const { access } = response.data as TokenRefreshResponse;
       
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('access_token', access);
-      }
+      LocalStorageManager.setAccessToken(access);
 
       return access;
     } catch (error) {
