@@ -1,4 +1,5 @@
 import { BaseApiService } from './base-api.service';
+import { LocalStorageManager } from './abstractions';
 import { 
   AuthResponse, 
   TokenRefreshResponse,
@@ -10,15 +11,11 @@ import {
 export class AuthService extends BaseApiService {
   // ===== MÉTODOS UTILITÁRIOS =====
   public isAuthenticated(): boolean {
-    return !!this.getAccessToken();
+    return LocalStorageManager.hasTokens();
   }
 
   public getCurrentUser(): User | null {
-    if (typeof window !== 'undefined') {
-      const userData = localStorage.getItem('user_data');
-      return userData ? JSON.parse(userData) : null;
-    }
-    return null;
+    return LocalStorageManager.getUserData<User>();
   }
 
   // ===== AUTENTICAÇÃO =====
@@ -26,11 +23,8 @@ export class AuthService extends BaseApiService {
     const response = await this.api.post<AuthResponse>('/api/v1/auth/login/', credentials);
     
     const { access, refresh, user } = response.data;
-    this.setTokens(access, refresh);
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user_data', JSON.stringify(user));
-    }
+    LocalStorageManager.setTokens(access, refresh);
+    LocalStorageManager.setUserData(user);
     
     return response.data;
   }
@@ -39,11 +33,8 @@ export class AuthService extends BaseApiService {
     const response = await this.api.post<AuthResponse>('/api/v1/auth/register/', userData);
     
     const { access, refresh, user } = response.data;
-    this.setTokens(access, refresh);
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user_data', JSON.stringify(user));
-    }
+    LocalStorageManager.setTokens(access, refresh);
+    LocalStorageManager.setUserData(user);
     
     return response.data;
   }
@@ -62,7 +53,7 @@ export class AuthService extends BaseApiService {
   }
 
   public async refreshToken(): Promise<TokenRefreshResponse> {
-    const refreshToken = this.getRefreshToken();
+    const refreshToken = LocalStorageManager.getRefreshToken();
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -71,9 +62,7 @@ export class AuthService extends BaseApiService {
       refresh: refreshToken
     });
 
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', response.data.access);
-    }
+    LocalStorageManager.setAccessToken(response.data.access);
 
     return response.data;
   }
