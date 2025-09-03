@@ -81,7 +81,7 @@ export const testModularStructure = async () => {
     // Teste de produtos (apenas se autenticado)
     if (isAuth) {
       try {
-        const products = await apiService.products.getProducts({ page: 1, limit: 5 });
+        const products = await apiService.products.getProducts({ page: 1, page_size: 5 });
         console.log('Produtos carregados:', products.results?.length || 0);
       } catch (error) {
         console.log('Erro ao carregar produtos (esperado se não autenticado):', error);
