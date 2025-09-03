@@ -1,33 +1,34 @@
-import { BaseApiService } from './base-api.service';
+import { CrudBaseService } from './abstractions';
 import { 
   Cart,
   AddToCartRequest,
   UpdateCartItemRequest
 } from '../types';
 
-export class CartService extends BaseApiService {
+export class CartService extends CrudBaseService<Cart> {
+  protected baseEndpoint = '/api/v1/cart/';
+
   // ===== CARRINHO =====
   public async getCart(): Promise<Cart> {
-    const response = await this.api.get<Cart>('/api/v1/cart/');
+    const response = await this.api.get<Cart>(this.baseEndpoint);
     return response.data;
   }
 
   public async addToCart(item: AddToCartRequest): Promise<Cart> {
-    const response = await this.api.post<Cart>('/api/v1/cart/add/', item);
-    return response.data;
+    return this.performCollectionAction<Cart>('add', item);
   }
 
   public async updateCartItem(itemId: number, data: UpdateCartItemRequest): Promise<Cart> {
-    const response = await this.api.patch<Cart>(`/api/v1/cart/items/${itemId}/`, data);
+    const response = await this.api.patch<Cart>(`${this.baseEndpoint}items/${itemId}/`, data);
     return response.data;
   }
 
   public async removeFromCart(itemId: number): Promise<Cart> {
-    const response = await this.api.delete<Cart>(`/api/v1/cart/items/${itemId}/`);
+    const response = await this.api.delete<Cart>(`${this.baseEndpoint}items/${itemId}/`);
     return response.data;
   }
 
   public async clearCart(): Promise<void> {
-    await this.api.delete('/api/v1/cart/clear/');
+    await this.performCollectionAction('clear', {}, 'DELETE');
   }
 }
