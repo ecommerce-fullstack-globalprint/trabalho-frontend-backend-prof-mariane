@@ -20,7 +20,8 @@ export class OrderService extends CrudBaseService<Order> {
   }
 
   public async createOrder(orderData: CreateOrderRequest): Promise<Order> {
-    return this.create(orderData);
+    const response = await this.api.post<Order>(this.baseEndpoint, orderData);
+    return response.data;
   }
 
   public async cancelOrder(id: number): Promise<Order> {
