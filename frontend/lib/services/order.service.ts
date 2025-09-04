@@ -1,41 +1,35 @@
 import { CrudBaseService } from './abstractions';
-import { 
-  Order,
-  CreateOrderRequest,
-  CustomOrder,
-  CreateCustomOrderRequest,
-  PaginatedResponse
-} from '../types';
+import { Order, CreateOrderRequest, CustomOrder, CreateCustomOrderRequest, PaginatedResponse } from '../types';
 
 export class OrderService extends CrudBaseService<Order> {
-  protected baseEndpoint = '/api/v1/orders/';
+  protected baseEndpoint = '/api/v1/orders/'; // Endpoint base de pedidos
 
   // ===== PEDIDOS =====
   public async getOrders(): Promise<PaginatedResponse<Order>> {
-    return this.getAll();
+    return this.getAll(); // Retorna todos os pedidos paginados (herdado do CRUD base)
   }
 
   public async getOrder(id: number): Promise<Order> {
-    return this.getById(id);
+    return this.getById(id); // Retorna um pedido específico pelo ID
   }
 
   public async createOrder(orderData: CreateOrderRequest): Promise<Order> {
-    const response = await this.api.post<Order>(this.baseEndpoint, orderData);
+    const response = await this.api.post<Order>(this.baseEndpoint, orderData); // Cria novo pedido
     return response.data;
   }
 
   public async cancelOrder(id: number): Promise<Order> {
-    return this.performAction<Order>(id, 'cancel', {}, 'PATCH');
+    return this.performAction<Order>(id, 'cancel', {}, 'PATCH'); // Cancela pedido usando ação PATCH
   }
 
   // ===== PEDIDOS CUSTOMIZADOS =====
   public async getCustomOrders(): Promise<PaginatedResponse<CustomOrder>> {
-    const response = await this.api.get<PaginatedResponse<CustomOrder>>('/api/v1/custom-orders/');
+    const response = await this.api.get<PaginatedResponse<CustomOrder>>('/api/v1/custom-orders/'); // GET pedidos customizados
     return response.data;
   }
 
   public async getCustomOrder(id: number): Promise<CustomOrder> {
-    const response = await this.api.get<CustomOrder>(`/api/v1/custom-orders/${id}/`);
+    const response = await this.api.get<CustomOrder>(`/api/v1/custom-orders/${id}/`); // GET pedido customizado específico
     return response.data;
   }
 
@@ -47,6 +41,7 @@ export class OrderService extends CrudBaseService<Order> {
     formData.append('budget_max', orderData.budget_max.toString());
     formData.append('deadline', orderData.deadline);
 
+    // Adiciona anexos se houver
     if (orderData.attachments) {
       orderData.attachments.forEach((file, index) => {
         formData.append(`attachments[${index}]`, file);
@@ -55,7 +50,7 @@ export class OrderService extends CrudBaseService<Order> {
 
     const response = await this.api.post<CustomOrder>('/api/v1/custom-orders/', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'multipart/form-data', // Necessário para upload de arquivos
       },
     });
     return response.data;
