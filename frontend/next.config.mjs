@@ -15,10 +15,11 @@ const nextConfig = {
     NEXT_PUBLIC_DEV_MODE: process.env.NEXT_PUBLIC_DEV_MODE,
   },
   async rewrites() {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`,
+        destination: `${baseUrl}/api/:path*`,
       },
     ];
   },
