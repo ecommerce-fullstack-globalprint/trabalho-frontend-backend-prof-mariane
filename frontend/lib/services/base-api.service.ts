@@ -17,7 +17,7 @@ export class BaseApiService {
     
     this.api = axios.create({
       baseURL: this.baseURL,
-      timeout: 10000,
+      timeout: 3000, // Reduzido para 3 segundos
       headers: {
         'Content-Type': 'application/json',
       },

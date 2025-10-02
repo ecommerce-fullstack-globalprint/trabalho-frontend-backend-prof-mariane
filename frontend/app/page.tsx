@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense } from "react";
 import {
   Search,
   Filter,
@@ -31,9 +31,34 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { realArts } from "@/lib/artsData";
+
+// Lazy load do Header para melhor performance
+const Header = dynamic(() => import("@/components/layout/header").then(mod => ({ default: mod.Header })), {
+  loading: () => (
+    <div className="bg-white/95 backdrop-blur-md border-b border-gray-200">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-32" />
+          <div className="hidden md:flex items-center space-x-6">
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 const categories = [
   "Todas",
@@ -123,7 +148,7 @@ export default function HomePage() {
     }>
   >([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // isMobileMenuOpen removido - agora gerenciado pelo Header component
 
   // Banner carousel state
   const [currentBanner, setCurrentBanner] = useState(0);
@@ -140,38 +165,41 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [isAutoPlaying]);
 
-  const nextBanner = () => {
+  const nextBanner = useCallback(() => {
     setCurrentBanner((prev) => (prev + 1) % banners.length);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 10000); // Retoma auto-play após 10s
-  };
+  }, []);
 
-  const prevBanner = () => {
+  const prevBanner = useCallback(() => {
     setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 10000); // Retoma auto-play após 10s
-  };
+  }, []);
 
-  const goToBanner = (index: number) => {
+  const goToBanner = useCallback((index: number) => {
     setCurrentBanner(index);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 10000); // Retoma auto-play após 10s
-  };
+  }, []);
 
-  const filteredArts = realArts.filter((art) => {
-    const matchesSearch = art.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "Todas" || art.category === selectedCategory;
-    const matchesType = selectedType === "Todos" || art.type === selectedType;
-    const matchesPrice =
-      art.price >= priceRange[0] && art.price <= priceRange[1];
+  // Filter arts com memoização para melhor performance
+  const filteredArts = useMemo(() => {
+    return realArts.filter((art) => {
+      const matchesSearch = art.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "Todas" || art.category === selectedCategory;
+      const matchesType = selectedType === "Todos" || art.type === selectedType;
+      const matchesPrice =
+        art.price >= priceRange[0] && art.price <= priceRange[1];
 
-    return matchesSearch && matchesCategory && matchesType && matchesPrice;
-  });
+      return matchesSearch && matchesCategory && matchesType && matchesPrice;
+    });
+  }, [searchTerm, selectedCategory, selectedType, priceRange]);
 
-  const addToCart = (art: (typeof realArts)[0]) => {
+  const addToCart = useCallback((art: (typeof realArts)[0]) => {
     setCartItems((prev) => {
       const existingItem = prev.find((item) => item.id === art.id);
       if (existingItem) {
@@ -189,183 +217,15 @@ export default function HomePage() {
         },
       ];
     });
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-gray-800 bg-clip-text text-transparent">
-                GlobalPrint
-              </h1>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link
-                href="/"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                Catálogo
-              </Link>
-              <Link
-                href="/encomendas"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                Arte Personalizada
-              </Link>
-              <Link
-                href="/sobre"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                Sobre
-              </Link>
-            </nav>
-
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {cartItems.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-blue-600">
-                    {cartItems.length}
-                  </Badge>
-                )}
-              </Button>
-
-              <div className="flex items-center space-x-2">
-                <Link href="/cliente">
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-2"
-                  >
-                    <User className="h-4 w-4" />
-                    <span className="text-sm">Minha Conta</span>
-                  </Button>
-                </Link>
-              </div>
-
-              <Link href="/cadastro">
-                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white">
-                  Cadastrar
-                </Button>
-              </Link>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {cartItems.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-blue-600">
-                    {cartItems.length}
-                  </Badge>
-                )}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="hover:bg-blue-50"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
-              <div className="flex flex-col space-y-4 pt-4">
-                <Link
-                  href="/"
-                  className="text-gray-700 hover:text-blue-600 transition-colors py-2 px-4 rounded-lg hover:bg-blue-50"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  🏠 Catálogo
-                </Link>
-                <Link
-                  href="/encomendas"
-                  className="text-gray-700 hover:text-blue-600 transition-colors py-2 px-4 rounded-lg hover:bg-blue-50"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  🎨 Arte Personalizada
-                </Link>
-                <Link
-                  href="/sobre"
-                  className="text-gray-700 hover:text-blue-600 transition-colors py-2 px-4 rounded-lg hover:bg-blue-50"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  ℹ️ Sobre
-                </Link>
-
-                <div className="border-t border-gray-200 pt-4 space-y-3">
-                  <Link
-                    href="/cliente"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button variant="ghost" className="w-full justify-start">
-                      <User className="h-4 w-4 mr-2" />
-                      Minha Conta
-                    </Button>
-                  </Link>
-
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button
-                      variant="outline"
-                      className="w-full bg-transparent border-gray-300"
-                    >
-                      Entrar
-                    </Button>
-                  </Link>
-
-                  <Link
-                    href="/cadastro"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white">
-                      Cadastrar
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Header otimizado */}
+      <Header 
+        cartItemsCount={cartItems.length}
+        onCartOpen={() => setIsCartOpen(true)}
+      />
 
       {/* Banner Carousel */}
       <section className="relative overflow-hidden">

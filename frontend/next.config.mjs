@@ -8,7 +8,18 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    formats: ['image/webp', 'image/avif'],
   },
+  // Otimizações de performance
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  
+  // Configurações experimentais para melhor performance
+  experimental: {
+    scrollRestoration: true,
+  },
+
   env: {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_API_VERSION: process.env.NEXT_PUBLIC_API_VERSION,
