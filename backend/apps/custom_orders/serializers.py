@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import CustomOrder
 
+
 # Converter os dados para JSON
 class CustomOrderSerializer(serializers.ModelSerializer):
     class Meta:
