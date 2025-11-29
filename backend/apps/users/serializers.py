@@ -32,3 +32,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         user = User.objects.create_user(password=password, **validated_data)
         return user
+
+
+class UsuarioOpitionSerializer(serializers.ModelSerializer):
+    nome = serializers.CharField(source='get_full_name', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'nome']

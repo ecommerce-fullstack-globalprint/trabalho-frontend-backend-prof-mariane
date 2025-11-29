@@ -5,6 +5,7 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 from rest_framework.routers import DefaultRouter
+from apps.cart import views as cart_views 
 from apps.users import views as users_views
 from apps.custom_orders import views as custom_orders_views
 from apps.reviews import views as reviews_views
@@ -32,6 +33,11 @@ router.register(
     r'payments',
     payments_views.PaymentViewSet,
     basename='payment'
+)
+router.register(
+    r'carts',
+    cart_views.CartViewSet,
+    basename='cart'
 )
 
 urlpatterns = [
