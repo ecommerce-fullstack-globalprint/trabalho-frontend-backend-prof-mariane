@@ -349,6 +349,7 @@ export default function ProductPage() {
                 <p className="text-gray-600 text-lg leading-relaxed">
                   {mockProduct.description}
                 </p>
+                
               </div>
 
               {/* Price */}
